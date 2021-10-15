@@ -125,4 +125,18 @@ How does this work?
 You can configure Visual Studio (in this case 2019) to authenticate against Azure AD when debugging. Below is the setting, which can be found in Visual Studio at *Tools -> Options -> Azure Service Authentication*.
 
 ![Azure Service Authentication](images/visual-stuidio-settings.png "Visual Studio Settings")
+This now means that the application when debugging will acquire the identity that is set above and then use this identity to make calls to the SQL databases.
 
+*It should be noted that if the intention is to use this mechanism alongside virtual network (VNet) restrictions, to check the firewall of the SQL Server before debugging sessions to see if this stops the code working in Visual Studio debug mode.*
+
+## Deployment to App Services
+In order for the app services code to be able to access via managed identity, a few things need to be set in the app service - besides deploying the code, of course :-)
+
+1. Enable managed identity of the web application
+2. Create a user in the target database that corresponds to the above identity - it's name is that of the web app, as previously described.
+3. Create a SQL Connections string in *Configuration* - if this is different to that of local debug mode
+4. Set an app setting that indicates to the app that it is now not running in Visual Studio. In the case of the sample web app, this is the setting *connectionStringForToken* and this requires a value of *RunAs=App* This is very important.
+
+![SQL Connection String](images/app-service-sql-connection-string.png "SQL Connection string")
+
+![RunAs Setting](images/app-service-setting.png "RunAs setting")
