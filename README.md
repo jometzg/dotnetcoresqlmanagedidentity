@@ -23,9 +23,12 @@ The two main advantages of a managed identity are:
 ### App Services Managed identity
 This may be enabled in the app service instance, which then returns a client ID, which may be used later. When enabled, it creates an Azure AD application which has the same name of the web app. As the web app has to have a unique FQDN, then this means that the name will also be unique in the Azure AD directory.
 
+![App Services](images/app-service-system-assigned-identity.png "App service managed identity")
 
 ### Azure SQL Database Active Directory authentication
 Azure SQL database can work in SQL authentication mode or Active Directory (AD) Authentication mode. You can also allow both at the same time. When enabling Azure AD authentication, you need to set an AD account as adminstrator of server.
+
+![App Services](images/sql-server-ad-admin.png "SQL Server Active Diretory administrator")
 
 SQL Server Management Studio (SSMS) can authenticate against Azure SQL in Active Directory mode and this is a good way of testing that this works. This can also be a simple route to adding the managed identity user to the database and giving them permission to access resources in the database.
 
