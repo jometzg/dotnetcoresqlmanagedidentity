@@ -74,3 +74,52 @@ In code terms, the GET method, creates a connection to the SQL database, opens t
             return products;
         }
 ```
+This is almost identical to a conventional application, except for how the application code authenticates to the database. The following line illustrates the change:
+```
+connection.AccessToken = new AzureSqlAuthTokenService().GetToken(Configuration["connectionStringForToken"]);
+```
+This is calls down into a simple class which gets a SQL access token using the *current identity*
+```
+ public class AzureSqlAuthTokenService
+    {
+        public string GetToken(string connectionString)
+        {
+            AzureServiceTokenProvider provider = new AzureServiceTokenProvider();
+            var token = provider.GetAccessTokenAsync("https://database.windows.net/").Result;
+            return token;
+        }
+    }
+```
+
+As can be seen, the application code pulls in a couple of values from configuration. These are important.
+
+```
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "connectionStringForToken": "RunAs=Developer; DeveloperTool=VisualStudio",
+  "ConnectionStrings": {
+    "northwind": "Server=tcp:<your-servername>.database.windows.net,1433;Initial Catalog=<your-database>;Persist Security Info=False;"
+  }
+}
+
+```
+Both of these need a little explaining:
+1. the database connection string defines the server and database names, but there is no setting for user name, password or how to authenticate.
+2. The setting "connectionStringForToken" will have different values in the development environment compared to when deployed in the app service. As can be seen above, these settings are the correct ones for local debugging.
+
+## Local Debugging
+One of the challenges with using managed identities and SQL authentication is how for this to both work in the target environment - the target app service, and how to debug locally. In the previous section, it show the value of a setting to be *RunAs=Developer; DeveloperTool=VisualStudio* - this indicates to the code that in development mode, use Visual Studio to authenticate.
+
+How does this work?
+
+You can configure Visual Studio (in this case 2019) to authenticate against Azure AD when debugging. Below is the setting, which can be found in Visual Studio at *Tools -> Options -> Azure Service Authentication*.
+
+[Azure Service Authentication](#images/visual-stuidio-settings.png)
+
