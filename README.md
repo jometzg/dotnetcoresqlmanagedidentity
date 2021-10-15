@@ -121,5 +121,5 @@ How does this work?
 
 You can configure Visual Studio (in this case 2019) to authenticate against Azure AD when debugging. Below is the setting, which can be found in Visual Studio at *Tools -> Options -> Azure Service Authentication*.
 
-![Azure Service Authentication](#images/visual-stuidio-settings.png "Visual Studio Settings")
+![Azure Service Authentication](images/visual-stuidio-settings.png "Visual Studio Settings")
 
