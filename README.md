@@ -151,8 +151,9 @@ But to summarise:
 3. Use the abov credentials to logon Visual Studio to this account (this is under the tools section). Make sure that this user can authenticate.
 4. Create an Azure SQL database (and server) which uses the Northwind sample database.
 5. Set the AD administrator for this using the AD user above.
-6. Check this using SQL Server Management Studio (SSMS) to logon in Active Directory mode. Keep SSMS open on a new query editor window
-7. as the database has now been created, you should be able to run a debug session in Visual Studio and then accessing the /products URL, you should see a list of products.
+6. Make sure the SQL Server fireall allows access to your local IP address (this is only for debugging)
+7. Check this using SQL Server Management Studio (SSMS) to logon in Active Directory mode. Keep SSMS open on a new query editor window
+8. as the database has now been created, you should be able to run a debug session in Visual Studio and then accessing the /products URL, you should see a list of products.
 ```
 HTTP/1.1 200 OK
 Transfer-Encoding: chunked
@@ -190,6 +191,7 @@ ALTER ROLE db_ddladmin ADD MEMBER [<your-app-service-name>];
 GO
 ```
 Replacing the placeholder with your app service's name.
+
 12. Go into the *Configuration* section of the app service
 13. Add the connection string
 14. Add the setting with the *RunAs=App* value
@@ -199,4 +201,4 @@ Replacing the placeholder with your app service's name.
 
 
 # Summary
-
+This attempts to put into one place all the steps needed to get a sample ASP.NET Core web application to access an Azure SQL database using managed identity.
