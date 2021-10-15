@@ -140,3 +140,63 @@ In order for the app services code to be able to access via managed identity, a 
 ![SQL Connection String](images/app-service-sql-connection-string.png "SQL Connection string")
 
 ![RunAs Setting](images/app-service-setting.png "RunAs setting")
+
+
+# Putting it all together
+The steps are very much as defined in the documentation [Secure Azure SQL Database connection from App Service using a managed identity](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-tutorial-connect-msi?tabs=windowsclient%2Cdotnetcore#prerequisites)
+
+But to summarise:
+1. Clone this GitHub repo for the sample app and get it to build in Visual Studio (2019)
+2. Create an Azure AD user that can be used as the administrator for the SQL database. Remember the credentials
+3. Use the abov credentials to logon Visual Studio to this account (this is under the tools section). Make sure that this user can authenticate.
+4. Create an Azure SQL database (and server) which uses the Northwind sample database.
+5. Set the AD administrator for this using the AD user above.
+6. Check this using SQL Server Management Studio (SSMS) to logon in Active Directory mode. Keep SSMS open on a new query editor window
+7. as the database has now been created, you should be able to run a debug session in Visual Studio and then accessing the /products URL, you should see a list of products.
+```
+HTTP/1.1 200 OK
+Transfer-Encoding: chunked
+Content-Type: application/json; charset=utf-8
+Server: Microsoft-IIS/10.0
+X-Powered-By: ASP.NET
+Date: Fri, 15 Oct 2021 09:56:41 GMT
+Connection: close
+
+[
+  {
+    "name": "HL Road Frame - Black, 58",
+    "productNumber": "FR-R92B-58"
+  },
+  {
+    "name": "HL Road Frame - Red, 58",
+    "productNumber": "FR-R92R-58"
+  },
+  {
+    "name": "Sport-100 Helmet, Red",
+    "productNumber": "HL-U509-R"
+  },
+  
+  etc.
+```
+If not, then recheck before moving on.
+9. Create the web app
+10. Enable system managed identity
+11. Using the name above, create this user in the database using SSMS
+```
+CREATE USER [<your-app-service-name>] FROM EXTERNAL PROVIDER; 
+ALTER ROLE db_datareader ADD MEMBER [<your-app-service-name>]; 
+ALTER ROLE db_datawriter ADD MEMBER [<your-app-service-name>]; 
+ALTER ROLE db_ddladmin ADD MEMBER [<your-app-service-name>]; 
+GO
+```
+Replacing the placeholder with your app service's name.
+12. Go into the *Configuration* section of the app service
+13. Add the connection string
+14. Add the setting with the *RunAs=App* value
+15. From Visual Studio deploy the code to the correct app service (one route is to grab the *publish porfile* and import into the Visual Studio publish wizard).
+16. Check the app is working by calling its */products* URL
+17. If there are problems re-check and enable app service logging, then check the logs
+
+
+# Summary
+
