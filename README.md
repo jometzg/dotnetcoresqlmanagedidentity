@@ -25,8 +25,52 @@ This may be enabled in the app service instance, which then returns a client ID,
 
 
 ### Azure SQL Database Active Directory authentication
+Azure SQL database can work in SQL authentication mode or Active Directory (AD) Authentication mode. You can also allow both at the same time. When enabling Azure AD authentication, you need to set an AD account as adminstrator of server.
 
+SQL Server Management Studio (SSMS) can authenticate against Azure SQL in Active Directory mode and this is a good way of testing that this works. This can also be a simple route to adding the managed identity user to the database and giving them permission to access resources in the database.
+
+When a web application needs to authenticate against an Azure SQL database, an actual user (user principal) should not be used as even if you know that user's password, the authentication process for users expected these to be entered on Azure AD hosted web pages and there may also be a requirement for multi-factor authentication that cannot be met with a user flow. So a managed identity must use a separate authentication flow - more akin to a device flow.
 
 
 ## The sample app
-This sample is a simple web API that returns the contents of the products table from the Azure SQL database sample "NorthWind" database.
+This sample is a simple web API that returns the contents of the products table from the Azure SQL database sample "NorthWind" database. This is exposed as a GET request on the path /products.
+
+In code terms, the GET method, creates a connection to the SQL database, opens the connection and executes a simple *select Name, ProductNumber from SalesLT.Product* from the Product table in the sample database.
+
+```
+// GET: api/<ProductsController>
+        [HttpGet]
+        public IEnumerable<Product> Get()
+        {
+            List<Product> products = new List<Product>();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(Configuration.GetConnectionString("northwind")))
+                {
+                    connection.AccessToken = new AzureSqlAuthTokenService().GetToken(Configuration["connectionStringForToken"]);
+                    connection.Open();
+         
+                    String sql = "select Name, ProductNumber from SalesLT.Product";
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                products.Add(new Product()
+                                {
+                                    Name = reader.GetString(0),
+                                    ProductNumber = reader.GetString(1)
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                _logger.LogError(e.ToString());
+            }
+            return products;
+        }
+```
